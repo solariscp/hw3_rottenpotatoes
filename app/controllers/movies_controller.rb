@@ -8,6 +8,15 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
+    if params[:sortby] == "Release"
+      @movies.sort! { |a,b| a.release_date <=> b.release_date }
+      @sort_by = :Release
+    elsif params[:sortby] == "Title"
+      @movies.sort! { |a,b| a.title.downcase <=> b.title.downcase }
+      @sort_by = :Title
+    else
+      @sort_by = nil
+    end
   end
 
   def new
