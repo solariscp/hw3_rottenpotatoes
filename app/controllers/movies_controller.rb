@@ -22,30 +22,30 @@ class MoviesController < ApplicationController
 
   def index
     @ratings = []
+    if params[:ratings] or params[:sortby]
+      session.clear
+    end
     if params[:ratings]
       @ratings += params[:ratings].keys
-      flash[:ratings] = @ratings
-    elsif flash[:ratings]
-      @ratings = flash[:ratings]
-      flash[:ratings] = @ratings
+      session[:ratings] = @ratings
+    elsif params[:commit] != "Refresh" and session[:ratings]
+      @ratings = session[:ratings]
+      session[:ratings] = @ratings
     end
     @movies = []
     @ratings.each do |rating| 
       @movies += Movie.find(:all,:conditions => {:rating => rating})
     end
-    if params[:sortby] == "Release"
+    @sort_by = session[:sortby]
+    session[:sortby] = @sort_by
+    if params[:sortby]
+      @sort_by = params[:sortby].to_sym
+      session[:sortby] = @sort_by
+    end
+    if @sort_by == :Release
       @movies.sort! { |a,b| a.release_date <=> b.release_date }
-      @sort_by = :Release
-      flash[:sortby] = :Release
-    elsif params[:sortby] == "Title"
+    elsif @sort_by == :Title
       @movies.sort! { |a,b| a.title.downcase <=> b.title.downcase }
-      @sort_by = :Title
-      flash[:sortby] = :Title
-    else
-      @sort_by = flash[:sortby]
-      flash[:sortby] = @sort_by
-    #else
-    #  @sort_by = nil
     end
   end
 
