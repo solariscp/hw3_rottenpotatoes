@@ -1,5 +1,19 @@
 class MoviesController < ApplicationController
 
+  def initialize()
+    @ratings = ["Fdsa"]
+    @all_ratings = Movie.get_all_ratings()
+    super
+  end
+  
+  attr_accessor :ratings
+  attr_accessor :all_ratings
+  
+  def refresh
+    @ratings = params[:ratings]
+    debugger
+  end
+  
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -7,15 +21,31 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    @ratings = []
+    if params[:ratings]
+      @ratings += params[:ratings].keys
+      flash[:ratings] = @ratings
+    elsif flash[:ratings]
+      @ratings = flash[:ratings]
+      flash[:ratings] = @ratings
+    end
+    @movies = []
+    @ratings.each do |rating| 
+      @movies += Movie.find(:all,:conditions => {:rating => rating})
+    end
     if params[:sortby] == "Release"
       @movies.sort! { |a,b| a.release_date <=> b.release_date }
       @sort_by = :Release
+      flash[:sortby] = :Release
     elsif params[:sortby] == "Title"
       @movies.sort! { |a,b| a.title.downcase <=> b.title.downcase }
       @sort_by = :Title
+      flash[:sortby] = :Title
     else
-      @sort_by = nil
+      @sort_by = flash[:sortby]
+      flash[:sortby] = @sort_by
+    #else
+    #  @sort_by = nil
     end
   end
 
