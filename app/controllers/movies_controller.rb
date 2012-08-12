@@ -24,9 +24,11 @@ class MoviesController < ApplicationController
     @ratings = {}
     if params[:ratings] or params[:sortby]
       session.clear
-    elsif (!params.keys.include?(:ratings) and !params.keys.include?(:sortby)) and (!session[:ratings].empty? or !session[:sortby].empty?)
-      flash.keep
-      redirect_to movies_path(:sortby => session[:sortby], :ratings => session[:ratings])
+    elsif params.keys
+      if (!params.keys.include?(:ratings) and !params.keys.include?(:sortby)) and ((session[:ratings] and !session[:ratings].empty?) or (session[:sortby] and !session[:sortby].empty?))
+        flash.keep
+        redirect_to movies_path(:sortby => session[:sortby], :ratings => session[:ratings])
+      end
     end
     if params[:ratings]
       @ratings = params[:ratings]
