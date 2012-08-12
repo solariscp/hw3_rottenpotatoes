@@ -1,7 +1,7 @@
 class MoviesController < ApplicationController
 
   def initialize()
-    @ratings = ["Fdsa"]
+    @ratings = {}
     @all_ratings = Movie.get_all_ratings()
     super
   end
@@ -21,19 +21,22 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @ratings = []
+    @ratings = {}
     if params[:ratings] or params[:sortby]
       session.clear
+    elsif (!params.keys.include?(:ratings) and !params.keys.include?(:sortby)) and (!session[:ratings].empty? or !session[:sortby].empty?)
+      flash.keep
+      redirect_to movies_path(:sortby => session[:sortby], :ratings => session[:ratings])
     end
     if params[:ratings]
-      @ratings += params[:ratings].keys
+      @ratings = params[:ratings]
       session[:ratings] = @ratings
     elsif params[:commit] != "Refresh" and session[:ratings]
       @ratings = session[:ratings]
       session[:ratings] = @ratings
     end
     @movies = []
-    @ratings.each do |rating| 
+    @ratings.keys.each do |rating| 
       @movies += Movie.find(:all,:conditions => {:rating => rating})
     end
     @sort_by = session[:sortby]
